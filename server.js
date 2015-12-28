@@ -133,23 +133,14 @@ app.post('/user', function (req, res) {
 // POST /users/login
 
 app.post('/user/login', function (req, res){
-	var user = _.pick(req.body, 'email', 'password');
+	var body = _.pick(req.body, 'email', 'password');
 
-	if (typeof user.email !== 'string' || typeof user.password !== 'string'){
-		return res.status(400).send();
-	}
-
-	db.user.findOne ({
-		where: {
-			email: user.email
-		}
-	}).then( function (foundUser) {
-		if(!foundUser || !bcrypt.compareSync(user.password,foundUser.get('password_hash')) )
-			return res.status(401).send();
+	db.user.authenticate(body).then( function (foundUser) {
 		res.json(foundUser.toPublicJSON());
-	}, function (e) {
-		res.status(500).send();
+	}, function () {
+		res.status(401).send();
 	});
+
 });
 
 
