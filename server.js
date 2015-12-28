@@ -122,7 +122,7 @@ app.post('/user', function (req, res) {
 	var user = _.pick(req.body, 'email', 'password');
 	
 	db.user.create(user).then(function (user) {
-		res.send('Successfully created user '+ user);
+		res.json(user.toPublicJSON());
 	}, function (e){
 		res.status(400).json(e);
 	});
