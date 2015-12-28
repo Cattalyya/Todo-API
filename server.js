@@ -80,39 +80,36 @@ app.delete('/todos/:id', function(req, res){
 		},function (){
 			res.status(500).send();
 		});
-	// if (matchedTodo){
-	// 	todos = _.without(todos, matchedTodo);
-	// 	res.send('Successfully deleted');
-	// }
-	// else 
-	// 	res.status(404).send();
 });
 
 // PUT /todos/:id   => update todo item
 
 app.put('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
 	var body = _.pick(req.body, 'description', 'completed');
-	var validAttributes = {};
+	var attributes = {};
 
-	if(!matchedTodo){
-		return res.status(404).send();
+	if( body.hasOwnProperty('completed') ) {
+		attributes.completed = body.completed;
 	}
-	if( body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
+	if ( body.hasOwnProperty('description') ) {
+		attributes.description = body.description;
 	}
-	else if ( body.hasOwnProperty('completed') ) {
-		return res.status(400).send();
-	}
-	if ( body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length!=0) {
-		validAttributes.description = body.description;
-	}
-	else if ( body.hasOwnProperty('description') ) {
-		return res.status(400).send();
-	}
-	_.extend(matchedTodo, validAttributes);
-	res.send("Successfully Update data");
+
+	db.todo.findById(todoId).then( function(todo){
+		if(todo){
+			todo.update(attributes).then( function(){
+				res.json(todo.toJSON());
+			}, function(e) {
+				res.status(400).json(e);
+			});
+		} else {
+			res.status(404).send();
+		}
+	}, function(){
+		res.status(500).send();
+	});
+	
 });
 
 db.sequelize.sync().then( function(){
