@@ -16,23 +16,40 @@ app.get('/', function(req, res) {
 
 // GET /todos?completed=true?keyword=work
 app.get('/todos', function(req, res){
-	var queryParams  = req.query;
-	var filteredTodos = todos;
+	var query  = req.query;
+	var where =  {};
 
-	if(queryParams.hasOwnProperty('completed') && _.isBoolean(JSON.parse(queryParams.completed)) ){
-		filteredTodos = _.where(filteredTodos, {'completed': JSON.parse(queryParams.completed)})
-	} else if(queryParams.hasOwnProperty('completed') ){
-		res.status(400).send();	
-	}
-	if(queryParams.hasOwnProperty('keyword') && _.isString( queryParams.keyword.trim() ) && queryParams.keyword.trim().length>0  ){
-		filteredTodos = _.filter(filteredTodos, function(eachList){
-			if( eachList.description.toLowerCase().indexOf( queryParams.keyword.trim().toLowerCase() ) != -1)
-				return true;
-		});
-	} else if ( queryParams.hasOwnProperty('keyword') ) {
-		res.status(400).send();	
-	}
-	res.json(filteredTodos);
+
+
+	if(query.hasOwnProperty('completed') && _.isBoolean(JSON.parse(query.completed)) ){
+		where.completed = JSON.parse(query.completed);
+	} 
+	if(query.hasOwnProperty('keyword') && query.keyword.trim().length>0  ){
+		where.description = {$like: '%'+query.keyword+'%'} ;
+	} 
+
+	db.todo.findAll({where: where}).then(function(todos){
+		res.json(todos);
+	},function(e){
+		res.status(500).send();
+	});
+
+	// var filteredTodos = todos;
+
+	// if(queryParams.hasOwnProperty('completed') && _.isBoolean(JSON.parse(queryParams.completed)) ){
+	// 	filteredTodos = _.where(filteredTodos, {'completed': JSON.parse(queryParams.completed)})
+	// } else if(queryParams.hasOwnProperty('completed') ){
+	// 	res.status(400).send();	
+	// }
+	// if(queryParams.hasOwnProperty('keyword') && _.isString( queryParams.keyword.trim() ) && queryParams.keyword.trim().length>0  ){
+	// 	filteredTodos = _.filter(filteredTodos, function(eachList){
+	// 		if( eachList.description.toLowerCase().indexOf( queryParams.keyword.trim().toLowerCase() ) != -1)
+	// 			return true;
+	// 	});
+	// } else if ( queryParams.hasOwnProperty('keyword') ) {
+	// 	res.status(400).send();	
+	// }
+	// res.json(filteredTodos);
 });
 
 // GET /todos/:id
@@ -49,11 +66,6 @@ app.get('/todos/:id', function(req, res){
 		res.status(500).send();
 		// error with database & server
 	});
-	// matchedTodo = _.findWhere(todos, {id: todoId});
-	// if (matchedTodo)
-	// 	res.send(matchedTodo);
-	// else 
-	// 	res.status(404).send();
 });
 
 // POST /todos
