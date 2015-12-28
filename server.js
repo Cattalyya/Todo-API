@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _= require('underscore');
 var db = require('./db.js');
+var bcrypt = require('bcrypt');
 
 var app = express();
 var PORT = process.env.PORT || 3000;
@@ -129,11 +130,33 @@ app.post('/user', function (req, res) {
 
 });
 
+// POST /users/login
+
+app.post('/user/login', function (req, res){
+	var user = _.pick(req.body, 'email', 'password');
+
+	if (typeof user.email !== 'string' || typeof user.password !== 'string'){
+		return res.status(400).send();
+	}
+
+	db.user.findOne ({
+		where: {
+			email: user.email
+		}
+	}).then( function (foundUser) {
+		if(!foundUser || !bcrypt.compareSync(user.password,foundUser.get('password_hash')) )
+			return res.status(401).send();
+		res.json(foundUser.toPublicJSON());
+	}, function (e) {
+		res.status(500).send();
+	});
+});
+
+
 db.sequelize.sync().then( function(){
 	app.listen(PORT, function(){
 		console.log('express listenting on port '+PORT);
 	});
 } );
-
 
 
