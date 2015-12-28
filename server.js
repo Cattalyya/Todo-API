@@ -13,9 +13,25 @@ app.get('/', function(req, res) {
 	res.send('<h1>Todo API Root</h1>');
 });
 
-// GET /todos
+// GET /todos?completed=true?keyword=work
 app.get('/todos', function(req, res){
-	res.json(todos);
+	var queryParams  = req.query;
+	var filteredTodos = todos;
+
+	if(queryParams.hasOwnProperty('completed') && _.isBoolean(JSON.parse(queryParams.completed)) ){
+		filteredTodos = _.where(filteredTodos, {'completed': JSON.parse(queryParams.completed)})
+	} else if(queryParams.hasOwnProperty('completed') ){
+		res.status(400).send();	
+	}
+	if(queryParams.hasOwnProperty('keyword') && _.isString( queryParams.keyword.trim() ) && queryParams.keyword.trim().length>0  ){
+		filteredTodos = _.filter(filteredTodos, function(eachList){
+			if( eachList.description.toLowerCase().indexOf( queryParams.keyword.trim().toLowerCase() ) != -1)
+				return true;
+		});
+	} else if ( queryParams.hasOwnProperty('keyword') ) {
+		res.status(400).send();	
+	}
+	res.json(filteredTodos);
 });
 
 // GET /todos/:id
