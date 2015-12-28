@@ -1,5 +1,6 @@
 var Sequelize = require('sequelize');
 var env = process.env.NODE_ENV || 'development';
+// process.env has key-value pair => NODE_ENV = key
 var sequelize;
 
 if (env === 'production') {
