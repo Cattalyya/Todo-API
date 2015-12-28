@@ -33,7 +33,8 @@ app.get('/todos/:id', function(req, res){
 app.post('/todos', function(req, res) {
 	var body = req.body;
 	console.log('description: '+body.description);
-	res.json(body.description);
+	todos.push(body);
+	res.json(body);
 });
 
 app.listen(PORT, function(){
