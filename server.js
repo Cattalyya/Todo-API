@@ -14,7 +14,7 @@ app.get('/', function(req, res) {
 	res.send('<h1>Todo API Root</h1>');
 });
 
-// GET /todos?completed=true?keyword=work
+// GET /todos?completed=true&keyword=work
 app.get('/todos', function(req, res){
 	var query  = req.query;
 	var where =  {};
@@ -36,7 +36,7 @@ app.get('/todos', function(req, res){
 });
 
 // GET /todos/:id
-app.get('/todos/:id', function(req, res){
+app.get('/todos/:id', function (req, res){
 	var todoId = parseInt(req.params.id);
 
 	db.todo.findById(todoId).then(function(todo){
@@ -45,25 +45,25 @@ app.get('/todos/:id', function(req, res){
 		} else {
 			res.status(404).send();
 		}
-	}, function(e){
+	}, function (e){
 		res.status(500).send();
 		// error with database & server
 	});
 });
 
 // POST /todos
-app.post('/todos', function(req, res) {
+app.post('/todos', function (req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
 	db.todo.create(body).then( function(todo){
 		res.json(todo.toJSON());
-	}, function(e){
+	}, function (e){
 		res.status(400).json(e);
 	});
 });
 
 // DELETE /todos/:id
-app.delete('/todos/:id', function(req, res){
+app.delete('/todos/:id', function (req, res){
 	var todoId = parseInt(req.params.id);
 	var matchedTodo = _.findWhere(todos, {id: todoId});
 	
@@ -84,7 +84,7 @@ app.delete('/todos/:id', function(req, res){
 
 // PUT /todos/:id   => update todo item
 
-app.put('/todos/:id', function(req, res) {
+app.put('/todos/:id', function (req, res) {
 	var todoId = parseInt(req.params.id);
 	var body = _.pick(req.body, 'description', 'completed');
 	var attributes = {};
@@ -96,11 +96,11 @@ app.put('/todos/:id', function(req, res) {
 		attributes.description = body.description;
 	}
 
-	db.todo.findById(todoId).then( function(todo){
+	db.todo.findById(todoId).then( function (todo){
 		if(todo){
 			todo.update(attributes).then( function(){
 				res.json(todo.toJSON());
-			}, function(e) {
+			}, function (e) {
 				res.status(400).json(e);
 			});
 		} else {
@@ -110,6 +110,23 @@ app.put('/todos/:id', function(req, res) {
 		res.status(500).send();
 	});
 	
+});
+
+
+////////// USER //////////
+
+// POST user
+
+app.post('/user', function (req, res) {
+
+	var user = _.pick(req.body, 'email', 'password');
+	
+	db.user.create(user).then(function (user) {
+		res.send('Successfully created user '+ user);
+	}, function (e){
+		res.status(400).json(e);
+	});
+
 });
 
 db.sequelize.sync().then( function(){
